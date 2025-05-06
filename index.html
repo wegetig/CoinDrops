@@ -1,1 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BonkZilla Live Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at center, #1a1a1a, #000);
+      color: #00ffcc;
+      font-family: 'Orbitron', sans-serif;
+      text-align: center;
+      overflow-x: hidden;
+    }
 
+    header {
+      padding: 40px 20px 10px;
+    }
+
+    .logo {
+      width: 100px;
+      animation: pulse 2s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); opacity: 0.8; }
+      to { transform: scale(1.1); opacity: 1; }
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #00ffcc;
+      text-shadow: 0 0 15px #00ffcc;
+      margin: 10px 0;
+    }
+
+    p {
+      color: #999;
+      margin-bottom: 40px;
+    }
+
+    canvas {
+      max-width: 90%;
+      background: #111;
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #00ffcc44;
+    }
+
+    footer {
+      margin-top: 50px;
+      color: #444;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Dinosaur.svg/1024px-Dinosaur.svg.png" class="logo" alt="BonkZilla Logo">
+    <h1>$BONKZILLA Live Chart</h1>
+    <p>Tracking the beast's price in real-time. 🦖💸</p>
+  </header>
+
+  <canvas id="priceChart"></canvas>
+
+  <footer>
+    Built for the degens. Not financial advice. Bonk responsibly.
+  </footer>
+
+  <script>
+    async function loadChart() {
+      const res = await fetch("https://api.dexscreener.com/latest/dex/pairs/solana/EARzCH79eVnSHNWWmmnq7Capck9V9azMxUULPCESpump");
+      const data = await res.json();
+      const priceData = data.pair?.priceUsd;
+      const time = new Date().toLocaleTimeString();
+
+      const ctx = document.getElementById('priceChart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [time],
+          datasets: [{
+            label: '$BONKZILLA Price (USD)',
+            data: [priceData],
+            borderColor: '#00ffcc',
+            backgroundColor: 'rgba(0,255,204,0.2)',
+            tension: 0.3,
+            borderWidth: 2,
+            pointRadius: 4
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: false,
+              ticks: {
+                color: '#00ffcc'
+              }
+            },
+            x: {
+              ticks: {
+                color: '#00ffcc'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#00ffcc'
+              }
+            }
+          }
+        }
+      });
+
+      // Auto-update every 30 seconds
+      setInterval(async () => {
+        const res = await fetch("https://api.dexscreener.com/latest/dex/pairs/solana/EARzCH79eVnSHNWWmmnq7Capck9V9azMxUULPCESpump");
+        const data = await res.json();
+        const price = data.pair?.priceUsd;
+        const time = new Date().toLocaleTimeString();
+
+        chart.data.labels.push(time);
+        chart.data.datasets[0].data.push(price);
+        chart.update();
+      }, 30000);
+    }
+
+    loadChart();
+  </script>
+
+</body>
+</html>
